@@ -1,11 +1,11 @@
 {
-    "name": "innoboxrr/meta-operations",
-    "description": "\u0016Este trait se aplica para modelos que emplean la configuraci├│n [Model]Meta. Permite recuperar, crear y actualizar metainformaci├│n del modelo.",
+    "name": "innoboxrr/traits",
+    "description": "Traits para mejorar la vida, por Innobox R&R",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Innoboxrr\\MetaOperations\\": "src/"
+            "Innoboxrr\\Traits\\": "src/"
         }
     },
     "authors": [
