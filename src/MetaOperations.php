@@ -11,6 +11,8 @@
 namespace Innoboxrr\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+
 
 trait MetaOperations
 {	
@@ -36,6 +38,17 @@ trait MetaOperations
         
         }
 
+    }
+
+    public function payload(string $key, $default = null)
+    {
+        if(isset($this->payload) && is_array($this->payload)) {
+
+            return Arr::get($this->payload, $key, $default);
+
+        } 
+
+        return $default;
     }
 
 	/*
