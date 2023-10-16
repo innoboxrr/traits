@@ -40,7 +40,7 @@ trait MetaOperations
 
     }
 
-    public function payload(string $key, $default = null)
+    public function getPayload(string $key, $default = null)
     {
         if(isset($this->payload) && is_array($this->payload)) {
 
