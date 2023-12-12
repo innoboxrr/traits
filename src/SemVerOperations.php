@@ -2,7 +2,7 @@
 
 namespace Innoboxrr\Traits;
 
-trait SemVerOperation
+trait SemVerOperations
 {
 
     /**
