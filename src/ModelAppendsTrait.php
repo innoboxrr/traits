@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Traits;
+namespace Innoboxrr\Traits;
 
 trait ModelAppendsTrait
 {
