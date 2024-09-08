@@ -25,30 +25,30 @@ trait MetaOperations
      */
 	public function meta($key, $default = null)
     {
-        
         $meta = $this->metas()->where('key', $key)->first();
-        
         if(!is_null($meta)){
-        
             return $meta->value;
-        
         }else{
-        
             return $default;
-        
         }
-
     }
 
     public function getPayload(string $key, $default = null)
     {
         if(isset($this->payload) && is_array($this->payload)) {
-
             return Arr::get($this->payload, $key, $default);
-
         } 
-
         return $default;
+    }
+
+    public function setMeta($key, $value)
+    {
+        $this->metas()->updateOrCreate([
+            'key' => $key
+        ],[
+            'value' => $value
+        ]);
+        return $this;
     }
 
 	/*
@@ -59,25 +59,18 @@ trait MetaOperations
 	 */
     public function update_metas($metas, $model_meta_class, $related, $event_class = null)
     {
-
     	// Crear el arreglo de metas
     	$metas = $this->metas_array($metas);
-
     	// Definir el MetaModelo que se va a modificar
     	$model_meta_class = app($model_meta_class);
- 
 		// Definir el evento a disparar en la actualización de clase
     	$event_class = (!is_null($event_class)) ? app($event_class) : null ;
-	
         // Recorrer cada elemento del arreglo
         foreach ($metas as $key => $meta) {
-
             // Convert meta to assignable value
             $meta = $this->parse_meta($meta); 
-            
             // Si no es nulo
             if($this->validate_meta($meta)){
-            
                 // Actualizar el valor
                 $new_meta = $model_meta_class::updateOrCreate([
                     'key' => $key,
@@ -85,115 +78,70 @@ trait MetaOperations
                 ],[
                     'value' => $meta
                 ]);
-
                 if(!is_null($event_class)) event(new $event_class($new_meta));
-
             // Si si es nulo.
             }else{
-            
                 // Buscar si el valor meta existe                
                 $meta = $model_meta_class::where('key', $key)->where($related, $this->id)->first();
-            
                 // Si existe y no se ha pasado valor, se debe eliminar
                 if(!is_null($meta)) $meta->delete();
-            
             }
-
         }
-
         return $this;
     }
 
     public function metas_array($metas)
     {
-
     	// Verificar que en el modelo principal se ha definido el atributo editable_metas
     	if(isset($this->editable_metas)){
-    		
             // Arreglo de las métas que se deberán actualizar
             $metas_array = [];
-            
             // Metas que están permitidas en el sistem 
             $editable_metas = $this->editable_metas;
-            
             // Analizar la variable metas
             $metas_values = $this->parse_metas($metas); 
-            
             // Analizar cada variable del arreglo
             foreach ($metas_values as $key => $value) {
-            
                 if(in_array($key, $editable_metas)){
-            
                     $metas_array += [$key => $value];
-            
                 }
-            
             }
-            
             // Retornar arreglo
             return $metas_array;
-
     	}
-
     }
 
     protected function parse_metas($metas)
     {
-
         if($metas instanceof Request){
-        
             return $metas->all();
-        
         }elseif (is_array($metas)){
-        
             return $metas;
-        
         }else{
-        
             return [];
-        
         }
-
     }
 
     protected function parse_meta($meta) 
     {
-
         if(is_array($meta)) {
-
             return json_encode($meta);
-
         }
-
         return $meta;
-
     }
 
     protected function validate_meta($meta) 
     {
-
         if(is_array($meta)) {
-
             return count($meta) > 0;
-
         }
-
         if(is_string($meta)) {
-
             $meta = trim($meta);
-
             return ($meta != '' && $meta != null);
-
         }
-
         if(is_null($meta)) {
-
             return false;
-
         }
-
         return true;
-
     }
-
 }
