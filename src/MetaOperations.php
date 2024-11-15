@@ -51,6 +51,26 @@ trait MetaOperations
         return $this;
     }
 
+    public function setMetas(array $metas)
+    {
+        foreach ($metas as $key => $value) {
+            $data[] = [
+                'key' => $key,
+                'value' => $value,
+            ];
+        }
+
+        // Actualiza o crea todas las etiquetas de forma masiva
+        $this->metas()->upsert(
+            $data,
+            ['key'], // Columnas para determinar si debe actualizar
+            ['value'] // Columnas a actualizar
+        );
+
+        return $this;
+    }
+
+
 	/*
 	 * $metas: Solicitud de actualización del usuario, Puede ser un objeto Request o un arreglo asociativo
 	 * $model_meta_class: Metamodelo que se va a actualizar Ej. ProductMeta
@@ -59,36 +79,63 @@ trait MetaOperations
 	 */
     public function update_metas($metas, $model_meta_class, $related, $event_class = null)
     {
-    	// Crear el arreglo de metas
-    	$metas = $this->metas_array($metas);
-    	// Definir el MetaModelo que se va a modificar
-    	$model_meta_class = app($model_meta_class);
-		// Definir el evento a disparar en la actualización de clase
-    	$event_class = (!is_null($event_class)) ? app($event_class) : null ;
-        // Recorrer cada elemento del arreglo
+        // Crear el arreglo de metas
+        $metas = $this->metas_array($metas);
+        
+        // Definir el MetaModelo que se va a modificar
+        $model_meta_class = app($model_meta_class);
+
+        // Definir el evento a disparar en la actualización de clase
+        $event_class = (!is_null($event_class)) ? app($event_class) : null;
+
+        // Validar y procesar las metas antes de interactuar con la base de datos
+        $valid_metas = [];
+        $metas_to_delete = [];
+        
         foreach ($metas as $key => $meta) {
-            // Convert meta to assignable value
-            $meta = $this->parse_meta($meta); 
-            // Si no es nulo
-            if($this->validate_meta($meta)){
-                // Actualizar el valor
-                $new_meta = $model_meta_class::updateOrCreate([
+            // Convertir meta a un valor asignable
+            $meta = $this->parse_meta($meta);
+
+            if ($this->validate_meta($meta)) {
+                $valid_metas[] = [
                     'key' => $key,
-                    $related => $this->id
-                ],[
-                    'value' => $meta
-                ]);
-                if(!is_null($event_class)) event(new $event_class($new_meta));
-            // Si si es nulo.
-            }else{
-                // Buscar si el valor meta existe                
-                $meta = $model_meta_class::where('key', $key)->where($related, $this->id)->first();
-                // Si existe y no se ha pasado valor, se debe eliminar
-                if(!is_null($meta)) $meta->delete();
+                    $related => $this->id,
+                    'value' => $meta,
+                ];
+            } else {
+                $metas_to_delete[] = $key;
             }
         }
+
+        // Realizar un upsert masivo para las metas válidas
+        if (!empty($valid_metas)) {
+            $model_meta_class::upsert(
+                $valid_metas,
+                ['key', $related], // Claves únicas para determinar duplicados
+                ['value'] // Columnas a actualizar
+            );
+
+            // Disparar eventos para cada meta actualizada
+            if (!is_null($event_class)) {
+                foreach ($valid_metas as $meta_data) {
+                    $new_meta = $model_meta_class::where('key', $meta_data['key'])
+                                                ->where($related, $this->id)
+                                                ->first();
+                    event(new $event_class($new_meta));
+                }
+            }
+        }
+
+        // Eliminar metas inválidas
+        if (!empty($metas_to_delete)) {
+            $model_meta_class::whereIn('key', $metas_to_delete)
+                ->where($related, $this->id)
+                ->delete();
+        }
+
         return $this;
     }
+
 
     public function metas_array($metas)
     {
