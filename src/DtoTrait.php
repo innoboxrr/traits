@@ -22,6 +22,7 @@ trait DtoTrait
     public function setData()
     {
         $this->data = get_object_vars($this);
+        unset($this->data['data']);
     }
 
     /**
