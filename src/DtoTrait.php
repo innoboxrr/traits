@@ -14,6 +14,17 @@ trait DtoTrait
     protected $data = [];
 
     /**
+     * SetData
+     * A partir de las propiedades de la clase, se asignan los valores a las propiedades del array.
+     *
+     * @param array $data
+     */
+    public function setData()
+    {
+        $this->data = get_object_vars($this);
+    }
+
+    /**
      * Retorna solo los campos especificados en el array.
      *
      * @param array $keys
