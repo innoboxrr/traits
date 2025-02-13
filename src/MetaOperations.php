@@ -51,19 +51,34 @@ trait MetaOperations
         return $this;
     }
 
-    public function setMetas(array $metas)
+    public function setMetas(array $metas, string $foreignKey = null)
     {
+        $data = [];
+
+        // Determinar dinámicamente la clave foránea
+        $foreignKey = $foreignKey ?? $this->metas()->getForeignKeyName();
+
+        if (!$foreignKey) {
+            throw new \Exception("No se pudo determinar la clave foránea para la relación 'metas()'.");
+        }
+
         foreach ($metas as $key => $value) {
             $data[] = [
+                $foreignKey => $this->getKey(), // Obtiene el ID del modelo actual
                 'key' => $key,
                 'value' => $value,
             ];
         }
 
+        // Validar que realmente se obtuvo la clave foránea
+        if (empty($data) || !isset($data[0][$foreignKey])) {
+            throw new \Exception("La clave foránea '{$foreignKey}' no se está asignando correctamente.");
+        }
+
         // Actualiza o crea todas las etiquetas de forma masiva
         $this->metas()->upsert(
             $data,
-            ['key'], // Columnas para determinar si debe actualizar
+            [$foreignKey, 'key'], // Claves para determinar si debe actualizar
             ['value'] // Columnas a actualizar
         );
 
