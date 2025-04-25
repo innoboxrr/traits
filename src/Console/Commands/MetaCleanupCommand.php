@@ -67,9 +67,14 @@ class MetaCleanupCommand extends Command
 
     protected function indexExists(string $tableName, string $indexName): bool
     {
-        $schemaManager = DB::getDoctrineSchemaManager();
-        $indexes = $schemaManager->listTableIndexes($tableName);
-
-        return array_key_exists($indexName, $indexes);
+        $database = DB::getDatabaseName();
+    
+        $result = DB::table('information_schema.statistics')
+            ->where('table_schema', $database)
+            ->where('table_name', $tableName)
+            ->where('index_name', $indexName)
+            ->exists();
+    
+        return $result;
     }
 }
