@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
             $this->publishes([__DIR__.'/../../config/innoboxrrtraits.php' => config_path('innoboxrrtraits.php')], 'config');
             $this->commands([
                 \Innoboxrr\Traits\Console\Commands\RegeneratePayloadCommand::class,
+                \Innoboxrr\Traits\Console\Commands\MetaCleanupCommand::class,
             ]);
         }
 
