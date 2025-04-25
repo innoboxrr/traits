@@ -85,7 +85,6 @@ trait MetaOperations
         return $this;
     }
 
-
 	/*
 	 * $metas: Solicitud de actualización del usuario, Puede ser un objeto Request o un arreglo asociativo
 	 * $model_meta_class: Metamodelo que se va a actualizar Ej. ProductMeta
@@ -150,7 +149,6 @@ trait MetaOperations
 
         return $this;
     }
-
 
     public function metas_array($metas)
     {
