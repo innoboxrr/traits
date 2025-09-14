@@ -4,14 +4,18 @@ namespace Innoboxrr\Traits;
 
 trait DumpsGlobalScopes
 {
-    public static function dumpGlobalScopes(): array
+    public static function dumpMyGlobalScopes(): array
     {
-        $rc = new \ReflectionClass(static::class);
-        $prop = $rc->getProperty('globalScopes');
-        $prop->setAccessible(true);
-        $scopes = $prop->getValue();
+        $model = new static();
+
+        $rc = new \ReflectionClass($model);
+        $m  = $rc->getMethod('getGlobalScopes');
+        $m->setAccessible(true);
+
+        $scopes = $m->invoke($model);
+
         return array_map(function ($s) {
-            return is_object($s) ? get_class($s) : gettype($s);
+            return is_object($s) ? get_class($s) : (is_callable($s) ? 'closure' : gettype($s));
         }, $scopes);
     }
 }
