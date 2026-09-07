@@ -30,7 +30,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
               with:
                   # El commit exacto que paso los tests, no la punta de master:
                   # entre medias puede haber entrado otro push.
