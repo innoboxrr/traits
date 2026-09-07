@@ -8,12 +8,12 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
 
-    public function register()
+    public function register(): void
     {
         // $this->mergeConfigFrom(__DIR__ . '/../../config/innoboxrrtraits.php', 'innoboxrrtraits');
     }
 
-    public function boot()
+    public function boot(): void
     {
 
         if ($this->app->runningInConsole())  {
