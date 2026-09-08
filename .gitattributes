@@ -1,0 +1,4 @@
+# Sin esto, un clon en Windows convierte todo a CRLF y el diff contra el mismo
+# archivo en Linux sale entero. Es lo que hizo parecer que el arbol tenia miles
+# de archivos divergentes cuando la divergencia real era minima.
+* text=auto eol=lf
