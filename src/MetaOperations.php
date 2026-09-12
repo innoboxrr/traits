@@ -51,7 +51,7 @@ trait MetaOperations
         return $this;
     }
 
-    public function setMetas(array $metas, string $foreignKey = null)
+    public function setMetas(array $metas, ?string $foreignKey = null)
     {
         $data = [];
 
