@@ -159,4 +159,98 @@ final class MetaOperationsTest extends TestCase
     {
         $this->assertSame('def', $this->article()->getPayload('lo.que.sea', 'def'));
     }
+
+    // METAS PROTEGIDAS
+
+    /**
+     * `protected_metas` existía en cada modelo generado y nada lo leía: una
+     * meta que solo debe escribir el sistema se podía sobrescribir desde el
+     * formulario con solo declararla editable.
+     */
+    public function test_el_formulario_no_escribe_una_meta_protegida_aunque_sea_editable(): void
+    {
+        $article = $this->article();
+
+        $article->update_metas(['views' => 999, 'seo_title' => 'T'], ArticleMeta::class, 'article_id');
+
+        $this->assertNull($article->meta('views'));
+        $this->assertSame('T', $article->meta('seo_title'));
+    }
+
+    public function test_el_formulario_tampoco_borra_una_meta_protegida(): void
+    {
+        $article = $this->article();
+
+        $article->setMeta('views', 10);
+        $article->update_metas(['views' => ''], ArticleMeta::class, 'article_id');
+
+        $this->assertEquals(10, $article->meta('views'));
+    }
+
+    public function test_el_sistema_escribe_las_metas_protegidas(): void
+    {
+        $article = $this->article();
+
+        $article->setMeta('views', 1)->setMetas(['views' => 2]);
+
+        $this->assertEquals(2, $article->meta('views'));
+    }
+
+    public function test_metas_array_quita_las_protegidas(): void
+    {
+        $this->assertSame(['seo_title' => 'T'], $this->article()->metas_array(['seo_title' => 'T', 'views' => 5]));
+    }
+
+    public function test_sin_lista_blanca_no_entra_nada(): void
+    {
+        $model = new class extends \Illuminate\Database\Eloquent\Model {
+            use \Innoboxrr\Traits\MetaOperations;
+        };
+
+        $this->assertSame([], $model->metas_array(['lo_que_sea' => 1]));
+    }
+
+    // VALORES
+
+    /**
+     * El valor se convertía a JSON antes de validarlo, así que un arreglo
+     * vacío llegaba como "[]" y la meta no se borraba nunca.
+     */
+    public function test_un_arreglo_vacio_borra_la_meta(): void
+    {
+        $article = $this->article();
+
+        $article->update_metas(['seo_title' => ['a']], ArticleMeta::class, 'article_id');
+        $article->update_metas(['seo_title' => []], ArticleMeta::class, 'article_id');
+
+        $this->assertSame(0, ArticleMeta::where('key', 'seo_title')->count());
+    }
+
+    public function test_una_clave_que_no_llega_no_se_toca(): void
+    {
+        $article = $this->article();
+
+        $article->update_metas(['seo_title' => 'T', 'seo_description' => 'D'], ArticleMeta::class, 'article_id');
+        $article->update_metas(['seo_title' => 'Otro'], ArticleMeta::class, 'article_id');
+
+        $this->assertSame('D', $article->meta('seo_description'));
+    }
+
+    public function test_set_meta_guarda_un_arreglo_como_json(): void
+    {
+        $article = $this->article();
+
+        $article->setMeta('seo_title', ['a' => 1])->setMetas(['seo_description' => ['b']]);
+
+        $this->assertSame('{"a":1}', $article->meta('seo_title'));
+        $this->assertSame('["b"]', $article->meta('seo_description'));
+    }
+
+    public function test_set_metas_sin_metas_no_hace_nada(): void
+    {
+        $article = $this->article();
+
+        $this->assertSame($article, $article->setMetas([]));
+        $this->assertSame(0, ArticleMeta::count());
+    }
 }
