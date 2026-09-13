@@ -3,6 +3,7 @@
 namespace Innoboxrr\Traits\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class RegeneratePayloadCommand extends Command
 {
