@@ -7,8 +7,8 @@ A small set of focused traits. Each one is independent — take only what you ne
 | Trait | Purpose |
 |---|---|
 | `ArrayOperations` | `isNotEmpty` and `wrapImplode` for arrays |
-| `DtoTrait` | Turn models into data-transfer objects with a consistent shape |
-| `EnumTrait` | Ergonomics for PHP enums — labels, options, validation |
+| `DtoTrait` | A key/value data container with dot-notation access (`get`, `set`, `has`, `only`, `except`, `merge`, `toJson`…). `setData()` loads the class's own properties into it |
+| `EnumTrait` | Helpers for backed enums: `getValues()`, `getKeys()`, `getValue()`, `isValid()`, `isValidKey()`, `isValidKeyValue()` |
 | `MetaOperations` | Key/value metas in a `<model>_metas` table, plus a JSON `payload` copy |
 | `ModelAppendsTrait` | Manage appended attributes without bloating the model |
 | `DumpsGlobalScopes` | Inspect which global scopes are active on a query — a debugging aid |
@@ -78,8 +78,10 @@ The metas table needs `key`, `value` (text), the foreign key and a unique index 
 
 ```bash
 composer require innoboxrr/traits
-php artisan vendor:publish --tag=innoboxrrtraits-config
+php artisan vendor:publish --provider="Innoboxrr\Traits\Providers\AppServiceProvider" --tag=config
 ```
+
+Full documentation of the ecosystem, in Spanish and English: <https://innoboxrr.github.io/docs/paquetes/support-traits-search>.
 
 ---
 
